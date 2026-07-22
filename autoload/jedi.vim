@@ -24,8 +24,16 @@ endif
 if !exists('g:jedi#complete_delay')
     let g:jedi#complete_delay = 100
 endif
+if !exists('g:jedi#install_dir')
+    let g:jedi#install_dir = expand('~/.cache/jedi.vim')
+endif
 if !exists('g:jedi#python_executable')
-    if executable('python3')
+    " A virtualenv previously created by :JediInstall takes precedence over
+    " the system interpreters: it is guaranteed to have jedi installed.
+    let s:managed_python = g:jedi#install_dir . '/venv/bin/python'
+    if executable(s:managed_python)
+        let g:jedi#python_executable = s:managed_python
+    elseif executable('python3')
         let g:jedi#python_executable = 'python3'
     elseif executable('python')
         let g:jedi#python_executable = 'python'
@@ -186,6 +194,47 @@ function! jedi#stop_server() abort
     endif
     let s:job = v:null
     let s:channel = v:null
+endfunction
+
+" Installation ---------------------------------------------------------
+
+" Install jedi into a plugin-managed virtualenv (g:jedi#install_dir/venv)
+" and switch the server to it.  Runs asynchronously; requires network
+" access for pip.
+function! jedi#install() abort
+    if executable('python3')
+        let l:python = 'python3'
+    elseif executable('python')
+        let l:python = 'python'
+    else
+        echoerr 'jedi.vim: no python3/python found to create a virtualenv'
+        return
+    endif
+
+    let l:venv = g:jedi#install_dir . '/venv'
+    call mkdir(g:jedi#install_dir, 'p')
+
+    echom 'jedi.vim: installing jedi into ' . l:venv . ' (this may take a minute)...'
+    let l:cmd = ['/bin/sh', '-c',
+        \ l:python . ' -m venv ' . shellescape(l:venv)
+        \ . ' && ' . shellescape(l:venv . '/bin/pip')
+        \ . ' install --upgrade --quiet jedi']
+    let l:job = job_start(l:cmd, {
+        \ 'exit_cb': function('s:on_install_exit', [l:venv]),
+        \ })
+    if l:job is v:null || job_status(l:job) !=# 'run'
+        echoerr 'jedi.vim: failed to start the installer'
+    endif
+endfunction
+
+function! s:on_install_exit(venv, job, status) abort
+    if a:status != 0
+        echoerr 'jedi.vim: installation failed (exit status ' . a:status . ')'
+        return
+    endif
+    let g:jedi#python_executable = a:venv . '/bin/python'
+    echom 'jedi.vim: jedi installed, restarting server with ' . g:jedi#python_executable
+    call jedi#start_server()
 endfunction
 
 function! jedi#server_status() abort

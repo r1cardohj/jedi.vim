@@ -57,8 +57,13 @@ g:jedi#completeopt                                      *g:jedi#completeopt*
     'menuone,noselect,preview'.
 
 g:jedi#python_executable                                *g:jedi#python_executable*
-    Python interpreter used to run the jedi server. Defaults to 'python3'
-    if available, otherwise 'python'.
+    Python interpreter used to run the jedi server. Defaults to the
+    |:JediInstall| managed virtualenv when present, then 'python3' if
+    available, otherwise 'python'.
+
+g:jedi#install_dir                                      *g:jedi#install_dir*
+    Directory where |:JediInstall| creates the plugin-managed virtualenv
+    (in <dir>/venv). Defaults to '~/.cache/jedi.vim'.
 
 g:jedi#autocomplete                                    *g:jedi#autocomplete*
     When 1 (the default), completion candidates are requested
@@ -84,6 +89,13 @@ g:jedi#signature_delay                              *g:jedi#signature_delay*
 
 :JediDisable                                               *:JediDisable*
     Disable jedi.vim and stop the background server.
+
+:JediInstall                                               *:JediInstall*
+    Install jedi into a plugin-managed virtualenv at
+    |g:jedi#install_dir|/venv using the system python and pip, then
+    restart the server with it. Runs asynchronously; requires network
+    access. A virtualenv created this way is picked up automatically on
+    future Vim startups, so no further configuration is needed.
 
 :JediGoto                                                     *:JediGoto*
     Jump to the definition of the symbol under the cursor. If there are

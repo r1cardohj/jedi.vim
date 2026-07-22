@@ -46,7 +46,15 @@ Using [vim-plug](https://github.com/junegunn/vim-plug):
 Plug 'r1cardohj/jedi.vim'
 ```
 
-Then make sure `jedi` is importable by `g:jedi#python_executable` (default: `python3`).
+Then either make sure `jedi` is importable by `g:jedi#python_executable`
+(default: `python3`), or let the plugin install its own copy — inside Vim:
+
+```vim
+:JediInstall
+```
+
+This creates a dedicated virtualenv in `~/.cache/jedi.vim/venv`, pip-installs
+jedi into it, and uses it automatically from then on. Zero system pollution.
 
 ## 🚀 Usage
 
@@ -67,6 +75,7 @@ Commands:
 ```vim
 :JediEnable [virtual_env_path]
 :JediDisable
+:JediInstall
 :JediGoto
 :JediDoc
 :JediSignature
@@ -151,7 +160,15 @@ pip install jedi
 Plug 'r1cardohj/jedi.vim'
 ```
 
-并确保 `g:jedi#python_executable`（默认 `python3`）能 `import jedi`。
+然后任选其一：确保 `g:jedi#python_executable`（默认 `python3`）能 `import jedi`；
+或者让插件自己装一份 —— 在 Vim 里执行：
+
+```vim
+:JediInstall
+```
+
+这会在 `~/.cache/jedi.vim/venv` 创建专用虚拟环境并 pip 安装 jedi,
+之后每次启动自动使用，零系统污染。
 
 ## 🚀 使用
 
@@ -172,6 +189,7 @@ Plug 'r1cardohj/jedi.vim'
 ```vim
 :JediEnable [virtual_env_path]
 :JediDisable
+:JediInstall
 :JediGoto
 :JediDoc
 :JediSignature

@@ -33,6 +33,10 @@ if !exists('g:jedi#complete_delay')
     let g:jedi#complete_delay = 100
 endif
 
+if !exists('g:jedi#install_dir')
+    let g:jedi#install_dir = expand('~/.cache/jedi.vim')
+endif
+
 augroup jedi_vim_auto
     autocmd!
     autocmd FileType python call jedi#init()
@@ -42,6 +46,7 @@ augroup END
 
 command! -nargs=? JediEnable  call jedi#enable(<q-args>)
 command! -nargs=0 JediDisable call jedi#disable()
+command! -nargs=0 JediInstall call jedi#install()
 command! -nargs=0 JediGoto    call jedi#goto()
 command! -nargs=0 JediDoc     call jedi#show_documentation()
 command! -nargs=0 JediSignature call jedi#show_signature()
