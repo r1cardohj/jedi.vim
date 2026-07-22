@@ -148,7 +148,7 @@ pip install jedi
 使用 [vim-plug](https://github.com/junegunn/vim-plug):
 
 ```vim
-Plug 'you/jedi.vim'
+Plug 'r1cardohj/jedi.vim'
 ```
 
 并确保 `g:jedi#python_executable`（默认 `python3`）能 `import jedi`。
