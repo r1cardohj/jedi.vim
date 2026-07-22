@@ -1,0 +1,146 @@
+*jedi.txt*  Asynchronous Python completion and navigation for Vim
+
+Version: 0.1.0
+
+==============================================================================
+CONTENTS                                                    *jedi-contents*
+
+    1. Introduction ............................... |jedi-introduction|
+    2. Requirements ............................... |jedi-requirements|
+    3. Configuration .............................. |jedi-configuration|
+    4. Commands ................................... |jedi-commands|
+    5. Mappings ................................... |jedi-mappings|
+    6. Completion ................................. |jedi-completion|
+    7. Virtual environments ....................... |jedi-virtualenv|
+
+==============================================================================
+1. INTRODUCTION                                         *jedi-introduction*
+
+jedi.vim provides Python code intelligence inside Vim 8. It uses the Python
+library *jedi* through a long-running JSON-RPC server and supports:
+
+    * asynchronous completion as you type and after a dot
+    * jump to definition
+    * documentation in a floating window
+    * call signatures, shown on demand and automatically while typing
+    * configurable virtual environments
+
+The jedi backend runs as a persistent Vim |job|; communication with the
+backend uses JSON-RPC over a |channel|.
+
+==============================================================================
+2. REQUIREMENTS                                         *jedi-requirements*
+
+    * Vim 8.0+ with |+job| and |+channel| and |+json|
+    * Python 3 with the *jedi* package installed
+        pip install jedi
+
+==============================================================================
+3. CONFIGURATION                                       *jedi-configuration*
+
+All options can be set in your |vimrc|.
+
+g:jedi#enabled                                          *g:jedi#enabled*
+    Enable or disable the plugin. Defaults to 1.
+
+g:jedi#virtual_env                                      *g:jedi#virtual_env*
+    Path to a Python virtual environment. When set, jedi will complete
+    against that environment's packages instead of the interpreter running
+    the server. Defaults to ''.
+    When empty, the working directory is searched for a virtualenv under
+    the common names `.venv`, `.env`, `venv` and `env` (in that order);
+    the first match is used automatically and a message is shown. An
+    explicit setting always takes precedence over auto-detection.
+
+g:jedi#completeopt                                      *g:jedi#completeopt*
+    Value used for |completeopt| in Python buffers. Defaults to
+    'menuone,noselect,preview'.
+
+g:jedi#python_executable                                *g:jedi#python_executable*
+    Python interpreter used to run the jedi server. Defaults to 'python3'
+    if available, otherwise 'python'.
+
+g:jedi#autocomplete                                    *g:jedi#autocomplete*
+    When 1 (the default), completion candidates are requested
+    automatically as you type in insert mode and shown in the popup menu
+    without blocking Vim. Set to 0 to only complete on a dot or manually
+    via |i_CTRL-X_CTRL-O|.
+
+g:jedi#complete_delay                                *g:jedi#complete_delay*
+    Debounce delay in milliseconds before an automatic completion request
+    is sent. Defaults to 100. Set to 0 to send immediately.
+
+g:jedi#signature_delay                              *g:jedi#signature_delay*
+    Debounce delay in milliseconds before the call signature popup is
+    requested after typing `(` or `,`. Defaults to 100. Set to 0 to show
+    immediately.
+
+==============================================================================
+4. COMMANDS                                                 *jedi-commands*
+
+:JediEnable [virtual_env]                                   *:JediEnable*
+    Enable jedi.vim. If a path is given it is used as the virtual
+    environment.
+
+:JediDisable                                               *:JediDisable*
+    Disable jedi.vim and stop the background server.
+
+:JediGoto                                                     *:JediGoto*
+    Jump to the definition of the symbol under the cursor. If there are
+    multiple results, a |location-list| is opened.
+
+:JediDoc                                                       *:JediDoc*
+    Show the documentation for the symbol under the cursor in a floating
+    window (falls back to a preview window without |+popupwin|).
+
+:JediSignature                                           *:JediSignature*
+    Show the call signature(s) at the cursor position in a floating
+    window. The parameter the cursor is on is wrapped in *...*.
+
+==============================================================================
+5. MAPPINGS                                                 *jedi-mappings*
+
+<Plug>JediGoto                                            *<Plug>JediGoto*
+    Jump to definition. Mapped to `gd` in Python buffers unless `gd` is
+    already mapped.
+
+<Plug>JediDoc                                              *<Plug>JediDoc*
+    Show documentation in a floating window. Mapped to `K` in Python
+    buffers unless `K` is already mapped. Inside the popup, CTRL-F and
+    CTRL-B scroll, `q` or ESC closes it.
+
+<Plug>JediSignature                                  *<Plug>JediSignature*
+    Show call signature. Mapped to `gs` in Python buffers unless `gs` is
+    already mapped.
+
+While typing arguments, the signature is also shown automatically after
+`(` and `,` (see |g:jedi#signature_delay|) and closed by `)` or when
+leaving insert mode.
+
+==============================================================================
+6. COMPLETION                                             *jedi-completion*
+
+Completion is asynchronous: typing in insert mode (see
+|g:jedi#autocomplete|) or typing a dot (`.`) schedules a debounced request
+(see |g:jedi#complete_delay|); when the answer arrives the popup menu is
+opened with |complete()| and Vim never blocks waiting for jedi.
+
+Manual completion with |i_CTRL-X_CTRL-O| is still available; note that the
+|omnifunc| mechanism itself is synchronous, so this path waits for jedi.
+
+==============================================================================
+7. VIRTUAL ENVIRONMENTS                                 *jedi-virtualenv*
+
+When |g:jedi#virtual_env| is empty (the default), starting the jedi server
+automatically searches the current working directory for a virtualenv
+named `.venv`, `.env`, `venv` or `env`. A directory counts as a virtualenv
+when it contains a `pyvenv.cfg` file or an executable `bin/python`.
+
+You can also set the virtual environment explicitly in your |vimrc| or by
+calling |:JediEnable| with a path; an explicit setting always wins:
+>
+    let g:jedi#virtual_env = expand('~/venv/myproject')
+<
+The server is re-initialized automatically when the path changes.
+
+vim:tw=78:ts=8:ft=help:norl:
