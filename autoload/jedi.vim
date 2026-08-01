@@ -339,15 +339,16 @@ function! jedi#complete(findstart, base) abort
     endif
 
     let l:ctx = s:current_context()
-    let l:line = getline('.')
+    " Before the second invocation Vim deletes the text between the
+    " findstart column and the cursor (a:base).  Reinsert it so jedi sees
+    " the full line and the correct completion column.
+    let l:lines = getline(1, '$')
+    let l:line = l:lines[line('.') - 1]
+    let l:line = strpart(l:line, 0, l:startcol) . l:base . strpart(l:line, l:startcol)
+    let l:lines[line('.') - 1] = l:line
+    let l:ctx.code = join(l:lines, "\n")
     " s:complete_startcol is a 0-based byte offset; jedi also uses 0-based columns.
     let l:jedi_col = l:startcol + len(l:base)
-    if l:jedi_col > len(l:line)
-        let l:jedi_col = len(l:line)
-    endif
-    if l:jedi_col < 0
-        let l:jedi_col = 0
-    endif
     let l:ctx.column = l:jedi_col
     call writefile(['complete(0) startcol=' . l:startcol . ' base=' . l:base . ' jedi_col=' . l:jedi_col . ' line=' . l:line . ' col=' . col('.')], '/tmp/jedi_complete_log.txt', 'a')
 
